@@ -5,9 +5,9 @@ game_board::game_board() {
 	this->_current_sub = 0;
 	// create the game pieces in the board
 	for (int count = 1; count <= amount_of_subs; count++) {
-		int* points = new (std::nothrow) int[count+1];
+		int* points = new (std::nothrow) int[count + 1];
 		check_allocation(points);
-		this->_subs[count-1].new_submarine(points, count + 1);
+		this->_subs[count - 1].new_submarine(points, count + 1);
 	}
 }
 //--------------------------------------------//

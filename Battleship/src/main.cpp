@@ -36,8 +36,8 @@ void log_in_page() {
 void enter_ships_page(game_board& board) {
 	// Insert Submarines
 	cout << "Please choose the locations of your 5 ships, use the numbers on the filled board to do so." << endl
-		 << "Please note that for each ship, two numbers are required - a start and an end index." << endl
-		 << "Finally, press enter to accept." << endl;
+		<< "Please note that for each ship, two numbers are required - a start and an end index." << endl
+		<< "Finally, press enter to accept." << endl;
 	board.draw(false); // draw empty board
 	for (int counter = 1; counter <= amount_of_subs; counter++) {
 		bool inserted = false; // has the ship been inserted ?
@@ -45,7 +45,7 @@ void enter_ships_page(game_board& board) {
 			int start, end; // start and end indexes for ship
 			board.pre_text(counter);
 			cin >> start >> end;
-			
+
 			inserted = board.insert(start, end, counter + 1);
 			if (!inserted) {
 				cout << "Failed to insert, try again" << endl;
@@ -74,7 +74,7 @@ int end(bool ply_1_won) {
 	else
 		cout << "Player 2 won the game! Congratulations!" << endl;
 	cout << endl << "Thank you for playing !" << endl
-		 << "Credit: Alex Yershov, GitHub account: AlexYershov1" << endl;
+		<< "Credit: Alex Yershov, GitHub account: AlexYershov1" << endl;
 	system("pause");
 	return EXIT_SUCCESS;
 }
@@ -116,7 +116,7 @@ int main() {
 
 		system("CLS"); // clear for new round
 
-		bool hit = player1 ? 
+		bool hit = player1 ?
 			board_ply_2.shoot(point, another_turn) : board_ply_1.shoot(point, another_turn);
 
 		if (!hit) { // was the shot valid or not
@@ -125,7 +125,7 @@ int main() {
 		}
 
 		if (player1) // draw board of player 2
-			draw_screen(board_ply_2, true); 
+			draw_screen(board_ply_2, true);
 		else         // draw board of player 1
 			draw_screen(board_ply_1, true);
 

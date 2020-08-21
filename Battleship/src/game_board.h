@@ -19,7 +19,7 @@ public:
 
 	/// <summary>
 	/// text that explains which ship is added to the board
-    /// and the size of the ship
+	/// and the size of the ship
 	/// </summary>
 	/// <param name="size">
 	/// size used both as ships' serial number
@@ -33,7 +33,7 @@ public:
 	/// <param name="end">end index of ships' route</param>
 	/// <returns>TRUE if inserted successfully, otherwise FALSE</returns>
 	bool insert(int start, int end, int size);
-	
+
 	/// <summary>
 	/// Checks if the user entered valid indexes for the ships' location.
 	/// Function is called from the 'insert' function.
@@ -62,7 +62,7 @@ public:
 	/// <param name="end">end index of ships' route</param>
 	/// <param name="is_horizontal">direction of ship</param>
 	void add_to_board(int start, int end, bool direction);
-	
+
 	/// <summary>
 	/// Player is trying to shoot down other Players' submarine on the board
 	/// </summary>
@@ -71,7 +71,7 @@ public:
 	/// a target, by reference</param>
 	/// <returns>TRUE if there was a hit, otherwise FALSE</returns>
 	bool shoot(int point, bool& another_turn);
-	
+
 	/// <summary>
 	/// Upon a hit, marking the index that was hit on the ship info
 	/// </summary>
@@ -83,14 +83,14 @@ public:
 	/// </summary>
 	/// <returns>TRUE if wins, otherwise FALSE</returns>
 	bool is_win();
-	
+
 	/// <summary>
 	/// Check if point is an index on the board
 	/// </summary>
 	/// <param name="point">an index</param>
 	/// <returns>TRUE if on board, otherwise FALSE</returns>
 	bool Is_point_on_board(int point);
-	
+
 	/// <summary>
 	/// Draw the board
 	/// </summary>

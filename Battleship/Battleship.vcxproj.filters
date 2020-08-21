@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="game_board">
+      <UniqueIdentifier>{8fe60798-e339-4962-894c-d5b65257b487}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="submarine">
+      <UniqueIdentifier>{242fa072-e9c9-4e23-b033-cb9ba9a984ea}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\submarine.h">
+      <Filter>submarine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\game_board.h">
+      <Filter>game_board</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\submarine.cpp">
+      <Filter>submarine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\game_board.cpp">
+      <Filter>game_board</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
+  </ItemGroup>
+</Project>
