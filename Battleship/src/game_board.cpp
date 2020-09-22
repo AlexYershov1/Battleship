@@ -1,6 +1,5 @@
 #include "game_board.h"
 
-
 game_board::game_board() {
 	this->_current_sub = 0;
 	// create the game pieces in the board
@@ -20,24 +19,19 @@ bool game_board::is_win() {
 	return status;
 }
 //--------------------------------------------//
-bool game_board::shoot(int point, bool& another_turn) {
-	if (Is_point_on_board(point)) {
-		t_cell* box = &this->_board[point / 10][point % 10]; // get target cell
-		if (*box == miss || *box == hit) // in case the cell has been targeted before
-			return false;
-		if (*box == ship) {	// check if ship is located at this cell
-			*box = hit;		// it's a hit
-			mark_submarine(point); // pass the info to the submarine data
-			cout << "It was a hit!" << endl;
-			another_turn = true; // player deserves to continue its' turn
-		}
-		else {
-			*box = miss;    // it's a miss
-			cout << "It was a miss!" << endl;
-		}
-		return true; // target was valid
+bool game_board::shoot(int point) {
+	t_cell* box = &this->_board[point / 10][point % 10]; // get target cell
+
+	if (*box == ship) {	// check if ship is located at this cell
+		*box = hit;		// it's a hit
+		mark_submarine(point); // pass the info to the submarine data
+		cout << "It was a hit!" << endl;
+		return true; // another turn won
 	}
-	return false;
+
+	*box = miss;    // it's a miss
+	cout << "It was a miss!" << endl;
+	return false;	// no another turn
 }
 //--------------------------------------------//
 void game_board::mark_submarine(int point) {
@@ -126,56 +120,9 @@ bool game_board::Is_point_on_board(int point) {
 		return false;
 	return true;
 }
-//--------------------------------------------//
-void game_board::draw(bool is_enemy) {
-	// write the entire table
-	for (int row = 0; row < table_size; row++) {
-		this->draw_roof_and_bottom();
-		for (int col = 0; col < table_size; col++) {
-			cout << '|';
-			cout << std::setfill(' ') << std::setw(3);
-			// send cell and cells' index as parameters
-			if (is_enemy)
-				draw_enemy_board(_board[row][col], row * 10 + col);
-			else
-				draw_own_board(_board[row][col], row * 10 + col);
-		}
-		cout << '|' << endl;
-	}
-	this->draw_roof_and_bottom();
-}
-//--------------------------------------------//
-void game_board::draw_own_board(t_cell box, int index) {
-	switch (box)
-	{
-	case ship:
-		cout << 'x';
-		break;
-	default:
-		cout << index; // print location of cell
-	}
-}
-//--------------------------------------------//
-void game_board::draw_enemy_board(t_cell box, int index) {
-	switch (box)
-	{
-	case hit:
-		cout << 'x';
-		break;
-	case miss:
-		cout << '*';
-		break;
-	default:
-		cout << index; // print location of cell
-	}
-}
-//--------------------------------------------//
-void game_board::draw_roof_and_bottom() {
-	// write the bottom and roof of the table: ----------------
-	for (int i = 0; i < table_size; i++)
-		cout << "----";
-	cout << endl;
-}
+
+
+
 //--------------------------------------------//
 void game_board::draw_ships() {
 	cout << "Ships:" << endl;
