@@ -21,10 +21,11 @@
 #include <iostream>
 #include <stdlib.h>
 #include "game_board.h"
+#include "network.h"
 
 void log_in_page();
 void enter_ships_page(game_board& b);
-void draw_screen(game_board board_ply_1, bool is_enemy);
+void draw_screen(game_board board_ply_1, empty_board enemy_status);
 int end(bool ply_1_won);
 
 void log_in_page() {
@@ -38,7 +39,7 @@ void enter_ships_page(game_board& board) {
 	cout << "Please choose the locations of your 5 ships, use the numbers on the filled board to do so." << endl
 		<< "Please note that for each ship, two numbers are required - a start and an end index." << endl
 		<< "Finally, press enter to accept." << endl;
-	board.draw(false); // draw empty board
+	board.draw(); // draw empty board
 	for (int counter = 1; counter <= amount_of_subs; counter++) {
 		bool inserted = false; // has the ship been inserted ?
 		while (!inserted) {
@@ -50,8 +51,10 @@ void enter_ships_page(game_board& board) {
 			if (!inserted) {
 				cout << "Failed to insert, try again" << endl;
 			}
-			else
-				draw_screen(board, false);
+			else {
+				board.draw();
+				board.draw_ships();
+			}
 		}
 	}
 }
@@ -63,16 +66,20 @@ void enter_ships_page(game_board& board) {
 /// <param name="Is_enemy"> determinantes whether a board needs to be printed as a board
 /// for the eyes of the enemy or as a board with the ships pictured in it,
 /// like in the insertion level </param>
-void draw_screen(game_board board_ply, bool is_enemy) {
-	board_ply.draw(is_enemy);
+void draw_screen(game_board board_ply, empty_board enemy_status) {
+	cout << "my board:" << endl;
+	board_ply.draw();
 	board_ply.draw_ships();
+
+	cout << endl << "enemy board status:" << endl;
+	enemy_status.draw();
 }
 
-int end(bool ply_1_won) {
-	if (ply_1_won)
-		cout << "Player 1 won the game! Congratulations!" << endl;
+int end(bool ply_won) {
+	if (ply_won)
+		cout << "You won the game! Congratulations!" << endl;
 	else
-		cout << "Player 2 won the game! Congratulations!" << endl;
+		cout << "You lost the game! Better luck next time!" << endl;
 	cout << endl << "Thank you for playing !" << endl
 		<< "Credit: Alex Yershov, GitHub account: AlexYershov1" << endl;
 	system("pause");
@@ -96,49 +103,71 @@ int main0() {
 }
 
 // main
-int main() {
-	game_board board_ply_1, board_ply_2;
+int main(int argc, char* argv[]) {
+//	------------initialize_connection------------------
+	if (argc != 2) {
+		cout << "Enter: main.exe server/client" << endl;
+		return 0;
+	}
+
+	void* socket = NULL;
+	bool is_server = true;
+	if (strcmp(argv[1], "server") == 0) {
+		init_socket_library();
+		socket = server_wait_for_client();
+	}
+	else if (strcmp(argv[1], "client") == 0) {
+		is_server = false;
+		init_socket_library();
+		socket = client_connect_to_server();
+	}
+	else {
+		cout << "Enter: main.exe server/client" << endl;
+		return 0;
+	}
+
+//	------------------THE GAME-------------------------
+	game_board board;
+	empty_board status;
 	log_in_page();
-	enter_ships_page(board_ply_1); // enter player 1 ships
-	system("CLS");
-	enter_ships_page(board_ply_2); // enter player 2 ships
+	enter_ships_page(board); // enter player ships
 	system("CLS");
 
-	bool player1 = true,	  // toggle between players turns
-		another_turn = false, // if player hit the target, it deserves another turn
-		ply_1_won = false, ply_2_won = false; // which player won the game
+	bool another_turn = false; // if player hit the target, it deserves another turn
+	bool ply_won = false; // which player won the game
 
-	while (!ply_1_won && !ply_2_won) {
+	while (!ply_won) {
 		int point; // target to shoot
+		int target; // enemys' target
 
-		cout << "Enter point to hit" << endl;
-		cin >> point;
+		draw_screen(board, status);
 
+		if (is_server)
+			target = socket_recv(socket);
+		
+		do {
+			cout << "Enter a valid point to hit:" << endl;
+			cin >> point;
+			cout << endl;
+		} while (!board.Is_point_on_board(point) || status.was_targeted_before(point));
 		system("CLS"); // clear for new round
 
-		bool hit = player1 ?
-			board_ply_2.shoot(point, another_turn) : board_ply_1.shoot(point, another_turn);
+		socket_send(socket, point, another_turn);
 
-		if (!hit) { // was the shot valid or not
-			cout << "wrong coordinate entered, please try again." << endl;
+		if (!is_server) 	
+			target = socket_recv(socket);
+
+		if (target == -1) { // in case player deserves another turn
+			status.mark_status(point, true); // a hit was made
 			continue;
 		}
+		else
+			status.mark_status(point, false); // a miss was made
 
-		if (player1) // draw board of player 2
-			draw_screen(board_ply_2, true);
-		else         // draw board of player 1
-			draw_screen(board_ply_1, true);
+		another_turn = board.shoot(target);
 
 		// check if game was won
-		ply_1_won = board_ply_1.is_win();
-		ply_2_won = board_ply_2.is_win();
-
-		if (another_turn) { // in case of a hit
-			another_turn = false;
-			continue;
-		}
-
-		player1 = !player1; // switch turn
+		ply_won = board.is_win();
 	}
-	return end(ply_1_won);
+	return end(ply_won);
 }
