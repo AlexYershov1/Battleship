@@ -1,14 +1,9 @@
-#pragma once
-
+#include "empty_board.h"
 #include "submarine.h"
+#include "network.h"
 
-const int amount_of_subs = 5;
-const int table_size = 10;
-
-
-class game_board {
+class game_board: public empty_board {
 private:
-	t_cell _board[table_size][table_size] = { nothing };
 	int _items_count = amount_of_subs;
 
 	submarine _subs[amount_of_subs];
@@ -67,10 +62,9 @@ public:
 	/// Player is trying to shoot down other Players' submarine on the board
 	/// </summary>
 	/// <param name="point">target index</param>
-	/// <param name="end">check if player deserves another turn after hitting
 	/// a target, by reference</param>
-	/// <returns>TRUE if there was a hit, otherwise FALSE</returns>
-	bool shoot(int point, bool& another_turn);
+	/// <returns>TRUE if another turn is deserved, otherwise FALSE</returns>
+	bool shoot(int point);
 
 	/// <summary>
 	/// Upon a hit, marking the index that was hit on the ship info
@@ -92,31 +86,8 @@ public:
 	bool Is_point_on_board(int point);
 
 	/// <summary>
-	/// Draw the board
+	/// draws ships on board
 	/// </summary>
-	/// <param name="is_enemy">toggle between drawing the board as an enemy
-	/// board or as the players' own board</param>
-	void draw(bool is_enemy);
-
-	/// <summary>
-	/// Draw the horizontal lines of the board
-	/// </summary>
-	void draw_roof_and_bottom();
-
-	/// <summary>
-	/// Assist drawing own board during the insert stage
-	/// </summary>
-	/// <param name="box">a single cell in the board</param>
-	/// <param name="index">index of the cell</param>
-	void draw_own_board(t_cell box, int index);
-
-	/// <summary>
-	/// Assist drawing enemiems board during the insert stage
-	/// </summary>
-	/// <param name="box">a single cell in the board</param>
-	/// <param name="index">index of the cell</param>
-	void draw_enemy_board(t_cell box, int index);
-
 	void draw_ships();
 
 	/// <summary>
