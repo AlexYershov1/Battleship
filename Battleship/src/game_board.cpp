@@ -13,8 +13,10 @@ game_board::game_board() {
 bool game_board::is_win() {
 	bool status = true;
 	for (int count = 0; count < amount_of_subs; count++) {
-		if (this->_subs[count].is_alive())
+		if (this->_subs[count].is_alive()) {
 			status = false; // found a ship that still survived
+			break;
+		}
 	}
 	return status;
 }
@@ -25,12 +27,12 @@ bool game_board::shoot(int point) {
 	if (*box == ship) {	// check if ship is located at this cell
 		*box = hit;		// it's a hit
 		mark_submarine(point); // pass the info to the submarine data
-		cout << "It was a hit!" << endl;
+		cout << "The enemy hit!" << endl;
 		return true; // another turn won
 	}
 
 	*box = miss;    // it's a miss
-	cout << "It was a miss!" << endl;
+	cout << "The enemy missed!" << endl;
 	return false;	// no another turn
 }
 //--------------------------------------------//

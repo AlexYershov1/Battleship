@@ -152,12 +152,9 @@ void* client_connect_to_server() {
     return (void*)ConnectSocket;
 }
 //--------------------------------------------//
-void socket_send(void* socket, const int buffer, bool another_turn) {
+void socket_send(void* socket, const int buffer) {
     // Send an initial buffer
     SOCKET s = (SOCKET)socket;
-
-    if (another_turn)
-        send(s, "1", 1, 0);
 
     // translate buffer from char to int
     char* updated_buff = translate_buff(buffer);
@@ -170,6 +167,17 @@ void socket_send(void* socket, const int buffer, bool another_turn) {
         WSACleanup();
         exit(-1);
     }
+}
+
+//--------------------------------------------//
+void socket_send(void* socket, bool another_turn) {
+    // Send an initial buffer
+    SOCKET s = (SOCKET)socket;
+
+    if (another_turn)
+        send(s, "-1", 2, 0);
+    else
+        send(s, "-2", 2, 0);
 }
 //--------------------------------------------//
 char* translate_buff(const int buffer) {
@@ -201,8 +209,12 @@ int socket_recv(void* socket) {
         return EXIT_FAILURE;
     }
 
-    if (iResult == 1)
+    // receiving result
+    if (strcmp(buffer, "-1") == 0)
         return -1;
+    else if (strcmp(buffer, "-2") == 0)
+        return -2;
+
     // translate buffer from char to int
     updated_buff = (int)(buffer[0] - '0') * 10 + (int)(buffer[1] - '0');
 

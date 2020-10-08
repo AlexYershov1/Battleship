@@ -22,18 +22,20 @@
 #include <stdlib.h>
 #include "game_board.h"
 #include "network.h"
-
+ //---------------prototype-------------------//
 void log_in_page();
 void enter_ships_page(game_board& b);
 void draw_screen(game_board board_ply_1, empty_board enemy_status);
+bool offence(game_board board, empty_board status, void* socket);
+bool defence(game_board board, void* socket);
 int end(bool ply_1_won);
-
+//--------------------------------------------//
 void log_in_page() {
 	cout << "Welcome to Battleship ! " << endl;
 	system("pause");
 	system("CLS");
 }
-
+//--------------------------------------------//
 void enter_ships_page(game_board& board) {
 	// Insert Submarines
 	cout << "Please choose the locations of your 5 ships, use the numbers on the filled board to do so." << endl
@@ -58,7 +60,7 @@ void enter_ships_page(game_board& board) {
 		}
 	}
 }
-
+//--------------------------------------------//
 /// <summary>
 /// draw suitable board and ships on screen
 /// </summary>
@@ -74,7 +76,7 @@ void draw_screen(game_board board_ply, empty_board enemy_status) {
 	cout << endl << "enemy board status:" << endl;
 	enemy_status.draw();
 }
-
+//--------------------------------------------//
 int end(bool ply_won) {
 	if (ply_won)
 		cout << "You won the game! Congratulations!" << endl;
@@ -85,7 +87,7 @@ int end(bool ply_won) {
 	system("pause");
 	return EXIT_SUCCESS;
 }
-
+//--------------------------------------------//
 // testing
 int main0() {
 	game_board board;
@@ -101,7 +103,7 @@ int main0() {
 	}
 	return 0;
 }
-
+//--------------------------------------------//
 // main
 int main(int argc, char* argv[]) {
 //	------------initialize_connection------------------
@@ -111,13 +113,16 @@ int main(int argc, char* argv[]) {
 	}
 
 	void* socket = NULL;
-	bool is_server = true;
+	bool is_server,
+		 toggle; // start - true for server false for client
 	if (strcmp(argv[1], "server") == 0) {
+		is_server = toggle = true;
 		init_socket_library();
 		socket = server_wait_for_client();
 	}
 	else if (strcmp(argv[1], "client") == 0) {
-		is_server = false;
+		cout << "enter client";
+		is_server = toggle = false;
 		init_socket_library();
 		socket = client_connect_to_server();
 	}
@@ -125,7 +130,6 @@ int main(int argc, char* argv[]) {
 		cout << "Enter: main.exe server/client" << endl;
 		return 0;
 	}
-
 //	------------------THE GAME-------------------------
 	game_board board;
 	empty_board status;
@@ -133,41 +137,97 @@ int main(int argc, char* argv[]) {
 	enter_ships_page(board); // enter player ships
 	system("CLS");
 
-	bool another_turn = false; // if player hit the target, it deserves another turn
+	bool another_turn; // if player hit the target, it deserves another turn
 	bool ply_won = false; // which player won the game
 
 	while (!ply_won) {
-		int point; // target to shoot
-		int target; // enemys' target
-
-		draw_screen(board, status);
-
-		if (is_server)
-			target = socket_recv(socket);
-		
-		do {
-			cout << "Enter a valid point to hit:" << endl;
-			cin >> point;
-			cout << endl;
-		} while (!board.Is_point_on_board(point) || status.was_targeted_before(point));
-		system("CLS"); // clear for new round
-
-		socket_send(socket, point, another_turn);
-
-		if (!is_server) 	
-			target = socket_recv(socket);
-
-		if (target == -1) { // in case player deserves another turn
-			status.mark_status(point, true); // a hit was made
-			continue;
+		if (toggle) {
+			another_turn = defence(board, socket);
+			draw_screen(board, status);
+			if (!another_turn)
+				toggle = false;
 		}
-		else
-			status.mark_status(point, false); // a miss was made
-
-		another_turn = board.shoot(target);
+		else {
+			another_turn = offence(board, status, socket);
+			if (!another_turn)
+				toggle = true;
+		}
 
 		// check if game was won
 		ply_won = board.is_win();
 	}
 	return end(ply_won);
 }
+//--------------------------------------------//
+bool offence(game_board board, empty_board status, void* socket) {
+	int point, // point to hit
+		res;   // result of hit: hit/miss
+	do {
+		cout << "Enter a valid point to hit:" << endl;
+		cin >> point;
+		cout << endl;
+	} while (!board.Is_point_on_board(point) || status.was_targeted_before(point));
+	system("CLS"); // clear for new round
+
+	socket_send(socket, point);
+
+	// analyzing the result
+	res = socket_recv(socket);
+	if (res == -1) { // a hit was made
+		status.mark_status(point, true);
+		return true;
+	}
+	else		   // a miss was made
+		status.mark_status(point, false);
+	return false;
+}
+//--------------------------------------------//
+bool defence(game_board board, void* socket) {
+	int target = socket_recv(socket);
+	bool another_turn = board.shoot(target); // mark on board
+	socket_send(socket, another_turn); // send result of attack
+	return another_turn;
+}
+
+/*
+previous main
+
+	//while (!ply_won) {
+	//	int point; // target to shoot
+	//	int target; // enemys' target
+
+	//	draw_screen(board, status);
+
+	//	if (is_server) {
+	//		target = socket_recv(socket);
+	//		cout << "we use server" << endl << target;
+	//	}
+	//
+	//	do {
+	//		cout << "Enter a valid point to hit:" << endl;
+	//		cin >> point;
+	//		cout << endl;
+	//	} while (!board.Is_point_on_board(point) || status.was_targeted_before(point));
+	//	system("CLS"); // clear for new round
+
+	//	socket_send(socket, point, another_turn);
+
+	//	if (!is_server)
+	//		target = socket_recv(socket);
+
+	//	if (target == -1) { // in case player deserves another turn
+	//		status.mark_status(point, true); // a hit was made
+	//		continue;
+	//	}
+	//	else
+	//		status.mark_status(point, false); // a miss was made
+
+	//	another_turn = board.shoot(target);
+
+	//	// check if game was won
+	//	ply_won = board.is_win();
+	//}
+	//return end(ply_won);
+
+
+*/
