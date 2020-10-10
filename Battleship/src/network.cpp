@@ -156,10 +156,10 @@ void socket_send(void* socket, const int buffer) {
     // Send an initial buffer
     SOCKET s = (SOCKET)socket;
 
-    // translate buffer from char to int
+    // translate buffer from int to char
     char* updated_buff = translate_buff(buffer);
     
-    int iResult = send(s, (const char*)buffer, 2, 0);
+    int iResult = send(s, (const char*)updated_buff, 2, 0);
     delete[] updated_buff;
     if (iResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());
@@ -188,8 +188,8 @@ char* translate_buff(const int buffer) {
         exit(EXIT_FAILURE);
     }
 
-    updated_buff[0] = (char)(buffer / 10);
-    updated_buff[1] = (char)(buffer % 10);
+    updated_buff[0] = (buffer / 10) + '0';
+    updated_buff[1] = (buffer % 10) + '0';
     
     return updated_buff;
 }
@@ -197,8 +197,9 @@ char* translate_buff(const int buffer) {
 //--------------------------------------------//
 int socket_recv(void* socket) {
     int updated_buff;
-    char buffer[2];
+    char buffer[3];
     int iResult = recv((SOCKET)socket, buffer, 2, 0);
+    buffer[2] = '\0';
     if (iResult == 0) {
         printf("Connection closed\n");
         return EXIT_FAILURE;

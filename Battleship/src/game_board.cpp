@@ -27,12 +27,10 @@ bool game_board::shoot(int point) {
 	if (*box == ship) {	// check if ship is located at this cell
 		*box = hit;		// it's a hit
 		mark_submarine(point); // pass the info to the submarine data
-		cout << "The enemy hit!" << endl;
 		return true; // another turn won
 	}
 
 	*box = miss;    // it's a miss
-	cout << "The enemy missed!" << endl;
 	return false;	// no another turn
 }
 //--------------------------------------------//

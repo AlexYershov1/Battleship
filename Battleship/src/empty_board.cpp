@@ -42,9 +42,9 @@ void empty_board::draw_roof_and_bottom() {
 //--------------------------------------------//
 void empty_board::mark_status(int point, bool is_hit) {
 	t_cell* box = &this->_board[point / 10][point % 10]; // get target cell
-	if (is_hit)
+	if (is_hit) 
 		*box = hit;
-	else
+	else 
 		*box = miss;
 }
 //--------------------------------------------//
